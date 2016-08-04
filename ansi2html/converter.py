@@ -83,6 +83,11 @@ _latex_template = '''\\documentclass{scrartcl}
 \\end{document}
 '''
 
+_pango_template = '''<markup>
+%(content)s
+</markup>
+'''
+
 _html_template = six.u("""<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
@@ -206,6 +211,7 @@ class Ansi2HTMLConverter(object):
 
     def __init__(self,
                  latex=False,
+                 pango=False,
                  inline=False,
                  dark_bg=True,
                  font_size='normal',
@@ -218,6 +224,7 @@ class Ansi2HTMLConverter(object):
                 ):
 
         self.latex = latex
+        self.pango = pango
         self.inline = inline
         self.dark_bg = dark_bg
         self.font_size = font_size
@@ -346,6 +353,10 @@ class Ansi2HTMLConverter(object):
                     style = [self.styles[klass].kwl[0][1] for klass in css_classes if
                              self.styles[klass].kwl[0][0] == 'color']
                     yield '\\textcolor[HTML]{%s}{' % style[0]
+                elif self.pango:
+                    style = ['%s="%s"' % self.styles[klass].kwp[0] for klass in css_classes if
+                             klass in self.styles]
+                    yield '<span %s>' % " ".join(style)
                 else:
                     style = [self.styles[klass].kw for klass in css_classes if
                              klass in self.styles]
@@ -419,6 +430,8 @@ class Ansi2HTMLConverter(object):
         else:
             if self.latex:
                 _template = _latex_template
+            if self.pango:
+                _template = _pango_template
             else:
                 _template = _html_template
             return _template % {
@@ -455,6 +468,10 @@ def main():
         "-L", "--latex", dest="latex",
         default=False, action="store_true",
         help="Export as LaTeX instead of HTML.")
+    parser.add_option(
+        "-P", "--pango", dest="pango",
+        default=False, action="store_true",
+        help="Export as Pango instead of HTML.")
     parser.add_option(
         "-i", "--inline", dest="inline",
         default=False, action="store_true",
@@ -505,6 +522,7 @@ def main():
 
     conv = Ansi2HTMLConverter(
         latex=opts.latex,
+        pango=opts.pango,
         inline=opts.inline,
         dark_bg=not opts.light_background,
         font_size=opts.font_size,

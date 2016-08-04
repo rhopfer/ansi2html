@@ -26,6 +26,7 @@ class Rule(object):
                              for k in sorted(kw.keys())]).strip()
         self.kwl = [(k.replace('_', '-'), kw[k][1:])
                              for k in sorted(kw.keys())]
+        self.kwp = [(k, kw[k]) for k in sorted(kw.keys())]
 
     def __str__(self):
         return '%s { %s; }' % (self.klass, self.kw)
